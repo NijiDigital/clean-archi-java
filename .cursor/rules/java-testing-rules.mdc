@@ -1,0 +1,50 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Utilise la stratégie de tests en pyramide (ex : 80% de tests unitaires, 15% de tests d'intégration, 5% de tests UI/end-to-end)
+
+- Utilise le formalise AAA
+
+## tests unitaires
+- Crée des tests unitaire que pour les services applicatifs, les Use Cases et autres classes utilitaires. Traite le cas de succès ainsi que tous les cas d'erreur (validation des entrées, permission de l'utilisateur, état incorrect d'une entité, ...).
+- Pour l'isolation, privilégie les implémentations InMemory pour les data repositories. Réserve la librairie de mock dynamique pour les API externes au projet.
+- Utilise le pattern Fixture pour faciliter la construction des données de test.
+
+## tests d'intégration
+- Utilisés pour tester certaines requêtes SQL complexes non générées automatiquement (ex: pas les findBy ou les save des Repository dont le sql est généré automatiquement)
+- test des API externes. 
+- test de démarrage de l'application (configuration par défaut)
+
+## stack
+- utilise junit-jupiter, assertj et Mockito ainsi que les adapteurs spring si besoin
+- Appuies-toi si besoin sur la librairie testcontainers pour les tests d'intégration (database, serveur http, message broker, etc...)
+
+
+## Examples
+
+```java
+class ExampleUseCaseTest {
+    private InMemoryJourneyRepository journeyRepository;
+    private InMemoryReservationRepository reservationRepository;
+    
+    @BeforeEach
+    void setUp() {
+        journeyRepository = new InMemoryJourneyRepository();
+        reservationRepository = new InMemoryReservationRepository();
+    }
+    
+    @Test
+    void should_work_with_fixtures() {
+        // Arrange
+        var journey = JourneyFixture.journeyWithCapacity(journeyId, 10);
+        journeyRepository.addJourney(journey);
+        
+        var reservation = ReservationFixture.confirmedReservation(journeyId, "user@example.com");
+        reservationRepository.addReservation(reservation);
+        
+        // Act & Assert...
+    }
+}
+```

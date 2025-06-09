@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    com.example.app: DEBUG
+    org.springframework.transaction: DEBUG
+    org.testcontainers: INFO 

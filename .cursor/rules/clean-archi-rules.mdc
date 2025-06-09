@@ -1,0 +1,245 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: This rule provides comprehensive best practices and coding standards for developing robust, maintainable, and performant Spring Boot applications, covering code structure, performance, security, testing, and common pitfalls.
+globs: *.java
+---
+# Cursor Rules pour la clean architecture
+
+## Stack technique
+-Java, SpringBoot avec Spring Web et Spring Data JPA, et un driver postgresql en dernière version LTS.
+
+
+## Structure
+Le projet sera une adaptation de la clean architecture avec la structure suivante :
+
+src/
+ ├── main/
+ │   ├── java/
+ │   │   └── com/example/app/                               (root package d'exemple)
+ │   │       ├── domain
+ │   │       │   ├── core                                   (package des value object mutualisés)
+ │   │       │   ├── entity
+ │   │       │   │   └── xxx                                (package entité métier XXX)
+ │   │       │   │       ├── XXX.java                       (classe de l'entité métier XXX)
+ │   │       │   │       ├── XXXId.java                     (identifiant associé à l'entité XXX) 
+ │   │       │   │       └── ValueObjectName.java           (value object utilisé spécifiquement par l'entité)            
+ │   │       │   ├── exception       
+ │   │       │   │   ├── InvalidDomainException.java        (exception métier de base, comme les erreurs de format)            
+ │   │       │   │   └── SpecificDomainException.java       (exception métier plus spécifique, concernant l'état d'une entité)
+ │   │       │   ├── repository                             (repository est l' équivalent de la gateway)
+ │   │       │   │   └── XXXRepository.java                 (interface de repository lié à l'entité XXX)
+ │   │       │   └── usecase
+ │   │       │       └── UseCaseExample.java                (use case)                 
+ │   │       ├── infrastructure
+ │   │       │   ├── Application.java                       (SpringBoot Main entry point)
+ │   │       │   ├── config                                 (SpringBoot configs)
+ │   │       │   ├── persistence
+ │   │       │   │   ├── entity
+ │   │       │   │   │   └── XXXJpaEntity.java              (classe entité JPA)
+ │   │       │   │   ├── mapper
+ │   │       │   │   │   └── XXXJPAMapper.java              (classe de mapping entre une entité du domaine et entité JPA)
+ │   │       │   │   └── XXXJpaRepository.java              (implementation JPA du repository)
+ │   │       │   └── web
+ │   │       │       ├── dto
+ │   │       │       │   └── XXXDTO.java                    (DTO utilisés en entrée et sortie des controlleurs)
+ │   │       │       ├── mapper
+ │   │       │       │   └── XXXDTOMapper.java              (classe de mapping entre une entité du domaine et un DTO)
+ │   │       │       ├── XXXController.java       
+ │   │               └── GlobalExceptionHandler.java        (gestionnaire global d'exceptions)
+ │   └── resources/
+ │       └── application.yml                                (Application configuration)
+ └── test/
+     ├── java/
+     │   └── com/example/app/
+     │       └── usecase/                           (Usecase unit tests)
+     │       └── infrastructure/                    (jpa queries integration tests)
+     └── resources/
+         └──application.yml                         (Test-specific configuration)
+
+
+Pour un projet complexe, on effectuera cette décomposition pour chaque module fonctionnel.
+
+
+## Convention de nommage
+-Utiliser le "PascalCase" pour les classes, le "camelCase" pour méthodes et variables, le SNAKE_CASE en capilate pour les constantes
+
+## Style de programmation
+-Utilise le plus possible le style programmation fonctionnel (ex : java streams)
+
+## Composants de l'architecture
+
+### sens des dépendances
+- le domaine ne dépend de rien d'autre
+- un domain repository ne peut etre appelé que par les use case
+- l'infrastructure dépend du domaine (via l'injection de dépendance)
+
+### domaine
+
+#### Entités
+- classe java immutable respectant le principe d'encapsulation.
+- en particulier n'expose pas de setter, et utilise plutot des méthodes qui reflètent une action métier. On utilisera le pattern builder pour faciliter la mise à jour par copie.
+```java
+@Builder(toBuilder=true)
+class A {
+    public void validate() {
+        return A.toBuilder().state(State.VALIDATE).build();
+    }
+}
+```
+
+#### Exception
+Les erreurs de validations de format (null, vide, pattern) sont remontées sous forme d'InvalidDomainException, classe dérivant de IllegalArgumentException.
+Les autres erreurs auront un type dédié (ex : EntityFoundException).
+
+#### Value objects
+- Servent à modéliser des objets de base comme les ID, les énumérations, les noms de personne, les adresses, les emails, etc...
+- Reposer au maximum sur ces objets plutot que les types de base de java (Typage plus fort)
+- implémenter sous forme de record pour l'aspect immutable et plus lisible (ne pas surcharger equals, hashCode et toString)
+- Ils incluent leur validation dans le constructeur (compact)
+- utiliser les méthodes factory notamment pour la création à partir de string (of(string))
+
+#### value object ID
+- record spécifique pour chaque entité (Typage fort)
+- utiliser les UUID par défaut comme représentation interne
+- possède des méthodes factory generate() et (of(string))
+
+### Use Case
+- classe d'orchestration traitant un seul cas d'usage.
+- Les requetes et résultats sont modélisés par des record interne en accès public (nommage : UseCaseNameRequest, UseCaseNameResult)
+
+### Infrastructure
+
+#### persistance
+- Utilise JPA pour l'implémentation des entités
+- Utilise le pluriel pour les tables d'entité
+- Utilise le snake case pour le nom des champs
+- Utilise les contraintes not null et de longueur de champ
+- Utilise Lombok pour simplifier la classe (@Data, @Builder, @NoArgsConstructor, @AllArgsConstructor )
+### Exemple de classe Entity JPA
+```java
+@Entity
+@Table(name = "journeys")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class JourneyJpaEntity {
+
+    @Id
+    private String id;
+
+    @Column(name = "train_number", nullable = false, length = 6)
+    private String trainNumber;
+    
+    ...
+}
+```
+
+- Utilise Spring Data JPA pour l'implémentation interne des JPA repository (pattern adapter)
+```java
+public class JourneyJpaRepository implements JourneyRepository {
+
+    private final SpringDataJourneyRepository springDataJourneyRepository;
+    private final JourneyJpaMapper journeyJpaMapper;
+
+    @Override
+    public List<Journey> findAll() {
+        return springDataJourneyRepository.findAll()
+                .stream()
+                .map(journeyJpaMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Journey save(Journey journey) {
+        JourneyJpaEntity jpaEntity = journeyJpaMapper.toJpaEntity(journey);
+        JourneyJpaEntity savedEntity = springDataJourneyRepository.save(jpaEntity);
+        return journeyJpaMapper.toDomain(savedEntity);
+    }
+}
+
+interface SpringDataJourneyRepository extends JpaRepository<JourneyJpaEntity, String> {
+}
+```
+
+
+
+#### Controlleurs
+- Facade REST délégant aux use cases
+- Utilise les DTO en entrée et sortie de chaque endpoint
+- **N'effectue PAS de mapping manuel** (délégué aux mappers dans le package web.mapper)
+
+#### SpringBoot
+- préfère l'injection par constructeur (généré par lombok) plutot qu'Autowired
+
+#### Transactions
+La délimitation des transactions se fera au niveau des uses cases avec l'annotation javax.transaction.Transactional
+
+#### Mapping d'objets
+Les mappers (entité-JPA et entité-DTO) seront implémentés avec la librairie mapstruct. On utilisera le mapping automatique par défaut
+de mapstruct lorsque les types sont compatibles. Sinon on créera des converters
+
+#### Traitement des erreurs
+Utilise un gestionnaire global d'exception qui traduit les erreurs de domaine en erreur HTTP.
+Utilise le code 400 par défaut sauf si on peut être plus spécifique : en 403 (pour une erreur d'autorisation), en 404 (Entité non trouvée), 409 ( conflit sur l'état d'une entité)
+
+#### Java / Lombok
+- Privilégie la déclaration "var" plutot que les types explicites.
+- Utilise Lombok pour améliorer la lisibilité et la concision, y compris dans la couche domain
+
+## Testing (en complément des règles testing-rules)
+- Ne crée des tests unitaires (isolation) que pour les Use Cases (qui s'appuyeront sur les vrais objets de couche domaine)
+
+## Examples
+
+### Exemple de classe entity
+```java
+@Value
+@Builder
+public class Entity {
+    EntityId id;
+    String field;
+
+    public Reservation(EntityId id, String field) {
+        if (id == null) {
+            throw new InvalidDomainException("Entity ID cannot be null");
+        }
+        if (field == null) {
+            throw new InvalidDomainException("field cannot be null");
+        }
+
+        this.id = id;
+        this.field = field;
+    }
+}
+```
+
+### Exemple de value object
+```java
+public record Email(String value) {
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$",
+            Pattern.CASE_INSENSITIVE);
+
+    public Email {
+        validateEmail(value);
+    }
+
+    private static void validateEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new DomailValidationError("Email cannot be null or empty");
+        }
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new DomailValidationError("Invalid email format");
+        }
+    }
+
+    public static Email of(String value) {
+        return new Email(value);
+    }
+}
+```
