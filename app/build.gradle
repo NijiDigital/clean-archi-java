@@ -74,7 +74,7 @@ java {
 
 application {
     // Define the main class for the application.
-    mainClass = 'com.example.app.infrastructure.Application'
+    mainClass = 'fr.niji.example.trainresa.infrastructure.Application'
 }
 
 tasks.named('test') {

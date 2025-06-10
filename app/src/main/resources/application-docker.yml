@@ -36,7 +36,7 @@ management:
 
 logging:
   level:
-    com.example.app: INFO
+    fr.niji.example.trainresa: INFO
     org.springframework.transaction: WARN
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE 

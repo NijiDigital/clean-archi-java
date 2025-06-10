@@ -92,7 +92,7 @@ docker-compose up postgres -d
 ### Tests
 ```bash
 # Tests unitaires uniquement
-./gradlew :app:test --tests "com.example.app.usecase.*"
+./gradlew :app:test --tests "fr.niji.example.trainresa.usecase.*"
 
 # Tests d'intégration (nécessite Docker)
 ./gradlew :app:test --tests "*IntegrationTest"

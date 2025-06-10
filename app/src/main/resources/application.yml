@@ -32,5 +32,5 @@ server:
 
 logging:
   level:
-    com.example.app: DEBUG
+    fr.niji.example.trainresa: DEBUG
     org.springframework.transaction: DEBUG 
