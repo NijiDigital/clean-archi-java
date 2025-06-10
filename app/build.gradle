@@ -4,6 +4,7 @@ plugins {
     id 'org.springframework.boot' version '3.4.6'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'java'
+    id "org.sonarqube" version "6.2.0.5505"
 }
 
 group = 'com.example'
@@ -79,4 +80,12 @@ application {
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+sonar {
+  properties {
+    property "sonar.projectKey", "gpicavet1_clean-archi-java"
+    property "sonar.organization", "gpicavet1"
+    property "sonar.host.url", "https://sonarcloud.io"
+  }
 }

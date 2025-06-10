@@ -1,6 +1,6 @@
 # 🚄 Train Reservation System
 
-Système de réservation de billets de train développé avec Spring Boot et une architecture Clean Architecture.
+Système de réservation de billets de train rudimentaire développé avec Spring Boot et la Clean Architecture.
 
 ## 🏗️ Architecture
 
@@ -12,8 +12,8 @@ Le projet suit les principes de la Clean Architecture avec :
 ## 🛠️ Stack Technique
 
 - **Java 21** avec Eclipse Temurin
-- **Spring Boot 3.2.1** (Web, Data JPA, Validation)
-- **PostgreSQL 15** comme base de données
+- **Spring Boot 3.X** (Web, Data JPA, Validation)
+- **PostgreSQL 16** comme base de données
 - **Lombok** pour réduire le boilerplate
 - **Gradle 8.8** pour la gestion des dépendances
 - **Docker & Docker Compose** pour la containerisation
@@ -67,11 +67,6 @@ curl -X POST http://localhost:8080/api/reservations \
   }'
 ```
 
-### Monitoring
-- `GET /actuator/health` - État de santé de l'application
-- `GET /actuator/info` - Informations sur l'application
-- `GET /actuator/metrics` - Métriques de l'application
-
 ## 🛠️ Développement Local
 
 ### Prérequis
@@ -124,16 +119,6 @@ docker-compose build app
 # Redémarrer uniquement l'application
 docker-compose restart app
 ```
-
-## 📊 Architecture des Données
-
-### Entités principales
-- **Journey** : Trajet avec gares de départ/arrivée, horaires, places disponibles
-- **Reservation** : Réservation associée à un trajet et un passager
-
-### Base de données
-- **journeys** : Stockage des trajets
-- **reservations** : Stockage des réservations
 
 ## 🔧 Configuration
 
