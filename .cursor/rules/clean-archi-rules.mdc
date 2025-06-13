@@ -30,6 +30,10 @@ src/
  │   │       │   ├── exception       
  │   │       │   │   ├── InvalidDomainException.java        (exception métier de base, comme les erreurs de format)            
  │   │       │   │   └── SpecificDomainException.java       (exception métier plus spécifique, concernant l'état d'une entité)
+ │   │       │   ├── query                                  (repository est l' équivalent de la gateway)
+ │   │       │   │   ├── view                               (modèle de données spécifique aux query)
+ │   │       │   │   │   └── ExampleView.java               (value object utilisé spécifiquement par l'entité)            
+ │   │       │   │   └── ExampleQuery.java                  (interface de query dedié à la lecture - pattern cqrs)
  │   │       │   ├── repository                             (repository est l' équivalent de la gateway)
  │   │       │   │   └── XXXRepository.java                 (interface de repository lié à l'entité XXX)
  │   │       │   └── usecase
@@ -83,21 +87,23 @@ Pour un projet complexe, on effectuera cette décomposition pour chaque module f
 - classe java immutable respectant le principe d'encapsulation.
 - en particulier n'expose pas de setter, et utilise plutot des méthodes qui reflètent une action métier. On utilisera le pattern builder pour faciliter la mise à jour par copie.
 ```java
+@Value
 @Builder(toBuilder=true)
 class A {
+    State a;
     public void validate() {
         return A.toBuilder().state(State.VALIDATE).build();
     }
 }
 ```
 
-#### Exception
+#### Erreurs/Exception
 Les erreurs de validations de format (null, vide, pattern) sont remontées sous forme d'InvalidDomainException, classe dérivant de IllegalArgumentException.
 Les autres erreurs auront un type dédié (ex : EntityFoundException).
 
 #### Value objects
 - Servent à modéliser des objets de base comme les ID, les énumérations, les noms de personne, les adresses, les emails, etc...
-- Reposer au maximum sur ces objets plutot que les types de base de java (Typage plus fort)
+- Reposer au maximum sur ces objets plutot que les types de base de java (Typage fort)
 - implémenter sous forme de record pour l'aspect immutable et plus lisible (ne pas surcharger equals, hashCode et toString)
 - Ils incluent leur validation dans le constructeur (compact)
 - utiliser les méthodes factory notamment pour la création à partir de string (of(string))
@@ -109,7 +115,7 @@ Les autres erreurs auront un type dédié (ex : EntityFoundException).
 
 ### Use Case
 - classe d'orchestration traitant un seul cas d'usage.
-- Les requetes et résultats sont modélisés par des record interne en accès public (nommage : UseCaseNameRequest, UseCaseNameResult)
+- Les requetes et résultats du Use Case sont modélisés par des record interne en accès public (nommage : UseCaseNameRequest, UseCaseNameResult)
 
 ### Infrastructure
 

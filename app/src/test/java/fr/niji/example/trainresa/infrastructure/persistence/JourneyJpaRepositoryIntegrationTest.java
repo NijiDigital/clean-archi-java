@@ -128,7 +128,7 @@ class JourneyJpaRepositoryIntegrationTest {
         private JourneyJpaEntity createJourneyJpaEntity(String trainNumber, String depCode,
                         String arrCode, int capacity) {
                 return JourneyJpaEntity.builder()
-                                .id(JourneyId.generate().toString())
+                                .id(JourneyId.generate().valueString())
                                 .trainNumber(trainNumber)
                                 .departureStationCode(depCode)
                                 .arrivalStationCode(arrCode)
@@ -143,7 +143,7 @@ class JourneyJpaRepositoryIntegrationTest {
         private ReservationJpaEntity createReservationJpaEntity(String journeyId, String passengerEmail,
                         ReservationStatus status) {
                 return ReservationJpaEntity.builder()
-                                .id(ReservationId.generate().toString())
+                                .id(ReservationId.generate().valueString())
                                 .journeyId(journeyId)
                                 .passengerEmail(passengerEmail)
                                 .createdAt(LocalDateTime.now())

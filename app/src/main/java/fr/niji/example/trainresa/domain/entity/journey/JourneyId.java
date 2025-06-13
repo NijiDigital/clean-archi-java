@@ -2,14 +2,12 @@ package fr.niji.example.trainresa.domain.entity.journey;
 
 import java.util.UUID;
 
-import fr.niji.example.trainresa.domain.exception.InvalidDomainException;
+import fr.niji.example.trainresa.domain.core.EntityId;
 
-public record JourneyId(UUID value) {
+public record JourneyId(UUID value) implements EntityId<UUID> {
 
     public JourneyId {
-        if (value == null) {
-            throw new InvalidDomainException("JourneyId cannot be null");
-        }
+        validate(value);
     }
 
     public static JourneyId generate() {
@@ -17,19 +15,7 @@ public record JourneyId(UUID value) {
     }
 
     public static JourneyId of(String value) {
-        if (value == null || value.isBlank()) {
-            throw new InvalidDomainException("JourneyId string cannot be null or blank");
-        }
-        try {
-            return new JourneyId(UUID.fromString(value));
-        } catch (IllegalArgumentException e) {
-            throw new InvalidDomainException("Invalid JourneyId format: " + value);
-        }
+        var uuid = EntityId.parseValue(value, UUID::fromString, "JourneyId");
+        return new JourneyId(uuid);
     }
-
-    @Override
-    public String toString() {
-        return value.toString();
-    }
-
 }

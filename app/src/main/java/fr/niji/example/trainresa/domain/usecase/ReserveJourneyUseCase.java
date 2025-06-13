@@ -10,7 +10,6 @@ import fr.niji.example.trainresa.domain.exception.JourneyNotFoundException;
 import fr.niji.example.trainresa.domain.exception.NoAvailableSeatsException;
 import fr.niji.example.trainresa.domain.repository.JourneyRepository;
 import fr.niji.example.trainresa.domain.repository.ReservationRepository;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -44,9 +43,6 @@ public class ReserveJourneyUseCase {
 
         // Sauvegarder la réservation
         reservationRepository.save(reservation);
-
-        // Plus besoin de modifier le trajet car la gestion des places se fait par
-        // comptage
 
         return new ReserveJourneyResult(reservation);
     }

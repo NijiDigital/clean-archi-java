@@ -12,7 +12,6 @@ import fr.niji.example.trainresa.domain.entity.reservation.ReservationStatus;
 import fr.niji.example.trainresa.domain.repository.ReservationRepository;
 import fr.niji.example.trainresa.infrastructure.persistence.entity.ReservationJpaEntity;
 import fr.niji.example.trainresa.infrastructure.persistence.mapper.ReservationJpaMapper;
-
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -31,13 +30,13 @@ public class ReservationJpaRepository implements ReservationRepository {
 
     @Override
     public boolean existsById(ReservationId reservationId) {
-        return springDataReservationRepository.existsById(reservationId.toString());
+        return springDataReservationRepository.existsById(reservationId.valueString());
     }
 
     @Override
     public int countActiveReservationsByJourneyId(JourneyId journeyId) {
         return springDataReservationRepository.countByJourneyIdAndStatus(
-                journeyId.toString(),
+                journeyId.valueString(),
                 ReservationStatus.CONFIRMED);
     }
 }

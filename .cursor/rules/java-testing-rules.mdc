@@ -25,6 +25,30 @@ Utilise la stratégie de tests en pyramide (ex : 80% de tests unitaires, 15% de 
 ## Examples
 
 ```java
+// exemple de fixture utilisant un builder existant (lombok)
+// l'idée est de créer un objet avec des valeurs par défaut
+// que l'on peut surcharger avec les méthodes xxxWithyyy()
+class JourneyFixture {
+   public static Journey.JourneyBuilder defaultBuilder() {
+        return Journey.builder()
+                .id(JourneyId.generate())
+                .trainNumber(TrainNumber.of("TGV001"));
+    }
+
+    public static Journey defaultJourney() {
+        return defaultBuilder().build();
+    }
+
+    public static Journey journeyWithCapacity(int capacity) {
+        return defaultBuilder()
+                .capacity(capacity)
+                .build();
+    }
+
+}
+```
+
+```java
 class ExampleUseCaseTest {
     private InMemoryJourneyRepository journeyRepository;
     private InMemoryReservationRepository reservationRepository;
@@ -40,11 +64,13 @@ class ExampleUseCaseTest {
         // Arrange
         var journey = JourneyFixture.journeyWithCapacity(journeyId, 10);
         journeyRepository.addJourney(journey);
-        
-        var reservation = ReservationFixture.confirmedReservation(journeyId, "user@example.com");
-        reservationRepository.addReservation(reservation);
-        
-        // Act & Assert...
+  
+        // Act...
+        // usecase.makeAReservation()
+
+        // Assert
+        assertThat(reservationRepository.size()).isEqualTo(1); // should have one reservation
+
     }
 }
 ```

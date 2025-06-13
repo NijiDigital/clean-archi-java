@@ -10,7 +10,6 @@ import fr.niji.example.trainresa.domain.entity.journey.JourneyId;
 import fr.niji.example.trainresa.domain.repository.JourneyRepository;
 import fr.niji.example.trainresa.infrastructure.persistence.entity.JourneyJpaEntity;
 import fr.niji.example.trainresa.infrastructure.persistence.mapper.JourneyJpaMapper;
-
 import lombok.RequiredArgsConstructor;
 
 @Repository
@@ -22,7 +21,7 @@ public class JourneyJpaRepository implements JourneyRepository {
 
     @Override
     public Optional<Journey> findById(JourneyId journeyId) {
-        return springDataJourneyRepository.findById(journeyId.toString())
+        return springDataJourneyRepository.findById(journeyId.valueString())
                 .map(journeyJpaMapper::toDomain);
     }
 

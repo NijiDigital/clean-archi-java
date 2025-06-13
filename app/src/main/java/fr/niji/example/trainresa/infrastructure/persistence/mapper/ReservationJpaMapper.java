@@ -21,11 +21,6 @@ public interface ReservationJpaMapper {
 
     }
 
-    default String mapReservationIdToString(ReservationId value) {
-        return value.toString();
-
-    }
-
     default Email mapStringToEmail(String value) {
         return Email.of(value);
     }
